@@ -1,0 +1,22 @@
+{
+    "Group": "Potato",
+    "Name": "CommandAbreviationPlugin",
+    "Version": "0.0.1",
+    "Description": "abbreviate commands",
+    "Authors": [
+        {
+            "Name": "americanpotato"
+        }
+    ],
+    "Website": "",
+    "ServerVersion": "*",
+    "Dependencies": {
+        
+    },
+    "OptionalDependencies": {
+        
+    },
+    "DisabledByDefault": false,
+    "Main": "me.potato.plugin.CMDSubstitutionPlugin",
+    "IncludesAssetPack": true
+}

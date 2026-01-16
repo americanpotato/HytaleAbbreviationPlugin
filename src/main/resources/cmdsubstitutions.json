@@ -1,0 +1,6 @@
+{
+  "commands": [
+    ["/day", "/time day"],
+    ["/night", "/time night"]
+  ]
+}
