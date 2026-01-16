@@ -10,7 +10,7 @@ import java.util.List;
 
 // thanks gpt
 public class CommandConfig {
-    private static final String CONFIG_FILE = "cmdsubstitutions.json";
+    private static final String CONFIG_FILE = "./config/cmdsubstitutions.json";
     private List<List<String>> mappings;
 
     public CommandConfig() {
@@ -20,6 +20,12 @@ public class CommandConfig {
     private void loadConfig() {
         File file = new File(CONFIG_FILE);
         try {
+            // Ensure config directory exists
+            File parentDir = file.getParentFile();
+            if (parentDir != null && !parentDir.exists()) {
+                parentDir.mkdirs();
+            }
+
             if (!file.exists()) {
                 // Copy default from resources
                 InputStream in = getClass().getClassLoader().getResourceAsStream("cmdsubstitutions.json");
