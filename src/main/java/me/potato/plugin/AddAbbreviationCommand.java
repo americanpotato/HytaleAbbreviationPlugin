@@ -6,6 +6,7 @@ import com.hypixel.hytale.server.core.command.system.CommandContext;
 import com.hypixel.hytale.server.core.command.system.basecommands.CommandBase;
 
 import javax.annotation.Nonnull;
+import java.util.List;
 
 /**
  * Substitutes one command for another
@@ -30,22 +31,18 @@ public class AddAbbreviationCommand extends CommandBase {
         int secondSlash = input.indexOf('/', firstSlash + 1);
 
         if (secondSlash == -1 || firstSlash == -1) {
-            ctx.sendMessage(Message.raw("Usage: /addsub <abbreviation> <original command>, example: /addsub /goup /tp ~ 100 ~"));
+            ctx.sendMessage(Message.raw("Usage: /addsub <abbreviation> <original command>"));
+            ctx.sendMessage(Message.raw("Example: /addsub /sky /tp ~ 170 ~"));
+            ctx.sendMessage(Message.raw("Advanced Example: /addsub /xz $ $ /tp $ ~ $"));
+            ctx.sendMessage(Message.raw("then \"/xz 0 100\" tps the player to x:0, z:100"));
+            ctx.sendMessage(Message.raw("Also see - /listsub and /removesub "));
             return;
         }
 
         String abbreviation = input.substring(firstSlash, secondSlash).trim();
         String originalCommand = input.substring(secondSlash).trim();
 
-        CommandSubstitution substitution = new CommandSubstitution(
-                originalCommand,
-                abbreviation,
-                this.getName(),
-                CMDSubstitutionPlugin.version
-        );
-
-        CMDSubstitutionPlugin.registry.registerCommand(substitution);
-        CMDSubstitutionPlugin.config.addToConfig(abbreviation, originalCommand);
+        CMDSubstitutionPlugin.addSubstitution(abbreviation, originalCommand, this.pluginName, true);
 
         ctx.sendMessage(Message.raw("Registered new command substitution: " + abbreviation + " -> " + originalCommand));
     }

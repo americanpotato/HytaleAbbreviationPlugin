@@ -8,10 +8,9 @@ import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.List;
 
-// thanks gpt
 public class CommandConfig {
     private static final String CONFIG_FILE = "./config/cmdsubstitutions.json";
-    private List<List<String>> mappings;
+    private static List<List<String>> mappings;
 
     public CommandConfig() {
         loadConfig();
@@ -45,7 +44,7 @@ public class CommandConfig {
         }
     }
 
-    public void addToConfig(String abbreviation, String originalCommand) {
+    public List<String> addToConfig(String abbreviation, String originalCommand) {
         // Add new mapping
         List<String> mapping = new ArrayList<>();
         mapping.add(abbreviation);
@@ -72,6 +71,47 @@ public class CommandConfig {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        return mapping;
+    }
+
+    public static List<String> SubAndArgCountToMapping(SubAndArgCount and) {
+        for(List<String> list : mappings) {
+            if(and.subBase.equals(list.getFirst().split(" ")[0]) && and.expectedArgs == list.getLast().chars()
+                    .filter(ch -> ch == '$')
+                    .count()) {
+                return list;
+            }
+        }
+        return null;
+    }
+
+    public boolean removeSub(int index) {
+        int listIndex = index;
+
+        if (listIndex < 0 || listIndex >= mappings.size()) {
+            return false; // invalid index
+        }
+
+        mappings.remove(listIndex);
+
+        // Save updated mappings back to JSON
+        try {
+            File file = new File(CONFIG_FILE);
+
+            CommandWrapper wrapper = new CommandWrapper();
+            wrapper.commands = mappings;
+
+            Gson gson = new Gson();
+            try (Writer writer = new FileWriter(file)) {
+                gson.toJson(wrapper, writer);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+
+        return true;
     }
 
     public List<List<String>> getMappings() {

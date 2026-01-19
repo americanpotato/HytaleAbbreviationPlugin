@@ -10,7 +10,9 @@ import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
 
 import javax.annotation.Nonnull;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Plugin entrypoint
@@ -21,6 +23,7 @@ public class CMDSubstitutionPlugin extends JavaPlugin {
     public static CommandRegistry registry;
     public static String version;
     public static CommandConfig config;
+    public static Map<SubAndArgCount, List<String>> argsToConfigList = new HashMap<>();
 
     public CMDSubstitutionPlugin(@Nonnull JavaPluginInit init) {
         super(init);
@@ -36,11 +39,14 @@ public class CMDSubstitutionPlugin extends JavaPlugin {
 
         this.getEventRegistry().registerGlobal(PlayerSetupConnectEvent.class, CMDSubstitutionPlugin::onConnect);
 
-        for(List<String> l : config.getMappings()) {
-            this.getCommandRegistry().registerCommand(new CommandSubstitution(l.get(1), l.get(0), this.getName(), this.getManifest().getVersion().toString()));
-        }
-
         this.getCommandRegistry().registerCommand(new AddAbbreviationCommand(this.getName(), this.getManifest().getVersion().toString()));
+        this.getCommandRegistry().registerCommand(new ListAbbreviationCommand(this.getName(), this.getManifest().getVersion().toString()));
+        this.getCommandRegistry().registerCommand(new RemoveAbbreviationCommand(this.getName(), this.getManifest().getVersion().toString()));
+
+        for(List<String> l : config.getMappings()) {
+            addSubstitution(l.get(0), l.get(1), this.getName(), false);
+//            this.getCommandRegistry().registerCommand(new CommandSubstitution(l.get(1), l.get(0), this.getName(), this.getManifest().getVersion().toString()));
+        }
     }
 
     public static void onConnect(PlayerSetupConnectEvent event) {
@@ -48,4 +54,37 @@ public class CMDSubstitutionPlugin extends JavaPlugin {
         PermissionsModule.get().addUserToGroup(uuid, "abbreviations");
     }
 
+
+    public static SubAndArgCount getRightOne(String s, int n) {
+        for(SubAndArgCount sub : argsToConfigList.keySet()) {
+            if(sub.subBase.equals(s) && sub.expectedArgs == n) {
+                return sub;
+            }
+        }
+
+        return null;
+    }
+
+    public static void addSubstitution(String abbreviation, String originalCommand, String name, boolean modifyConfig) {
+        SubAndArgCount subAndCount = new SubAndArgCount(abbreviation.split(" ")[0], (int) abbreviation.chars()
+                .filter(ch -> ch == '$')
+                .count());
+
+        CommandSubstitution substitution = new CommandSubstitution(
+                originalCommand,
+                abbreviation.split(" ")[0],
+                name,
+                CMDSubstitutionPlugin.version
+        );
+
+        CMDSubstitutionPlugin.registry.registerCommand(substitution);
+        if(modifyConfig) {
+            List<String> mapping = CMDSubstitutionPlugin.config.addToConfig(abbreviation, originalCommand);
+            CMDSubstitutionPlugin.argsToConfigList.put(subAndCount, mapping);
+        } else {
+            List<String> mapping = CommandConfig.SubAndArgCountToMapping(subAndCount);
+            CMDSubstitutionPlugin.argsToConfigList.put(subAndCount, mapping);
+        }
+
+    }
 }
