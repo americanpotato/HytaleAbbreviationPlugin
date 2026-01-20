@@ -37,9 +37,7 @@ public class CMDSubstitutionPlugin extends JavaPlugin {
         registry = this.getCommandRegistry();
         version = this.getManifest().getVersion().toString();
 
-        this.getCommandRegistry().registerCommand(new AddAbbreviationCommand(this.getName(), this.getManifest().getVersion().toString()));
-        this.getCommandRegistry().registerCommand(new ListAbbreviationCommand(this.getName(), this.getManifest().getVersion().toString()));
-        this.getCommandRegistry().registerCommand(new RemoveAbbreviationCommand(this.getName(), this.getManifest().getVersion().toString()));
+        this.getCommandRegistry().registerCommand(new SubCommand(this.getName(), this.getManifest().getVersion().toString()));
 
         for(List<String> l : config.getMappings()) {
             addSubstitution(l.get(0), l.get(1), this.getName(), false);
