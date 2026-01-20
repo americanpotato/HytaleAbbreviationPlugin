@@ -19,7 +19,6 @@ public class CommandSubstitution extends CommandBase {
 
     public CommandSubstitution(String originalCommand, String replacementCommand, String pluginName, String pluginVersion) {
         super(replacementCommand.substring(1), "abbreviation for " + originalCommand);
-        this.setPermissionGroups("abbreviations");
         this.originalCommand = originalCommand;
         this.pluginName = pluginName;
         this.pluginVersion = pluginVersion;

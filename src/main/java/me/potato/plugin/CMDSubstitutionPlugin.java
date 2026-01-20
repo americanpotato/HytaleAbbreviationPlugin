@@ -37,8 +37,6 @@ public class CMDSubstitutionPlugin extends JavaPlugin {
         registry = this.getCommandRegistry();
         version = this.getManifest().getVersion().toString();
 
-        this.getEventRegistry().registerGlobal(PlayerSetupConnectEvent.class, CMDSubstitutionPlugin::onConnect);
-
         this.getCommandRegistry().registerCommand(new AddAbbreviationCommand(this.getName(), this.getManifest().getVersion().toString()));
         this.getCommandRegistry().registerCommand(new ListAbbreviationCommand(this.getName(), this.getManifest().getVersion().toString()));
         this.getCommandRegistry().registerCommand(new RemoveAbbreviationCommand(this.getName(), this.getManifest().getVersion().toString()));
@@ -47,11 +45,6 @@ public class CMDSubstitutionPlugin extends JavaPlugin {
             addSubstitution(l.get(0), l.get(1), this.getName(), false);
 //            this.getCommandRegistry().registerCommand(new CommandSubstitution(l.get(1), l.get(0), this.getName(), this.getManifest().getVersion().toString()));
         }
-    }
-
-    public static void onConnect(PlayerSetupConnectEvent event) {
-        java.util.UUID uuid = event.getUuid();
-        PermissionsModule.get().addUserToGroup(uuid, "abbreviations");
     }
 
 
@@ -86,5 +79,10 @@ public class CMDSubstitutionPlugin extends JavaPlugin {
             CMDSubstitutionPlugin.argsToConfigList.put(subAndCount, mapping);
         }
 
+    }
+
+    @Override
+    protected void start() {
+//        CommandManager.get().handleCommand(ConsoleSender.INSTANCE, "start command");
     }
 }
