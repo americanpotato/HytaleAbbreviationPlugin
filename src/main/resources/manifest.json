@@ -1,6 +1,6 @@
 {
     "Group": "Potato",
-    "Name": "CommandAbreviationPlugin",
+    "Name": "Abbreviations",
     "Version": "0.1.0",
     "Description": "abbreviate commands",
     "Authors": [
