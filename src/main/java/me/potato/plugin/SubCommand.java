@@ -59,19 +59,19 @@ public class SubCommand extends CommandBase {
                 ctx.sendMessage(Message.raw("Removed commands exist in game until the server restarts"));
             } else if(inputs.length == 3) {
                 int index = Integer.parseInt(inputs[2]) - 1;
-                List<List<String>> mappings = CMDSubstitutionPlugin.config.getMappings();
-                List<String> abr = mappings.get(index);
+                List<SubData> mappings = CMDSubstitutionPlugin.config.getMappings();
+                SubData abr = mappings.get(index);
                 CMDSubstitutionPlugin.config.removeSub(index);
-                sendHeaderMessage(ctx, "Removed from config: " + abr.getFirst() + " -> " + abr.getLast());
+                sendHeaderMessage(ctx, "Removed from config: " + abr.getSub() + " -> " + abr.getOriginal());
             }
         } else if(input.startsWith(this.getName() + " list")) {
             sendHeaderMessage(ctx, "List");
-            List<List<String>> mappings = CMDSubstitutionPlugin.config.getMappings();
+            List<SubData> mappings = CMDSubstitutionPlugin.config.getMappings();
             sendExistingCommandMessage(ctx, "id", "/examplesub", "/exampleoriginal");
 
             int index = 1;
-            for(List<String> abr : mappings) {
-                sendExistingCommandMessage(ctx, index+"", abr.getFirst(), abr.getLast());
+            for(SubData abr : mappings) {
+                sendExistingCommandMessage(ctx, index+"", abr.getSub(), abr.getOriginal());
                 index++;
             }
         } else {

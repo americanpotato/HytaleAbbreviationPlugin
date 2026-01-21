@@ -1,124 +1,144 @@
 package me.potato.plugin;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+
 import java.io.*;
 import java.lang.reflect.Type;
-import java.nio.file.*;
+import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class CommandConfig {
+
     private static final String CONFIG_FILE = "./config/cmdsubstitutions.json";
-    private static List<List<String>> mappings;
+    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+
+    private static final Type CONFIG_TYPE =
+            new TypeToken<Map<String, List<List<String>>>>() {}.getType();
+
+    private static List<SubData> mappings = new ArrayList<>();
 
     public CommandConfig() {
         loadConfig();
     }
 
+    /* -------------------- LOAD -------------------- */
+
     private void loadConfig() {
         File file = new File(CONFIG_FILE);
+
         try {
-            // Ensure config directory exists
-            File parentDir = file.getParentFile();
-            if (parentDir != null && !parentDir.exists()) {
-                parentDir.mkdirs();
+            if (file.getParentFile() != null) {
+                file.getParentFile().mkdirs();
             }
 
             if (!file.exists()) {
-                // Copy default from resources
-                InputStream in = getClass().getClassLoader().getResourceAsStream("cmdsubstitutions.json");
-                Files.copy(in, file.toPath());
+                InputStream in = getClass()
+                        .getClassLoader()
+                        .getResourceAsStream("cmdsubstitutions.json");
+
+                if (in != null) {
+                    Files.copy(in, file.toPath());
+                } else {
+                    saveConfig(); // create empty config
+                    return;
+                }
             }
 
             Reader reader = new FileReader(file);
-            Gson gson = new Gson();
-            Type type = new TypeToken<CommandWrapper>() {}.getType();
-            CommandWrapper wrapper = gson.fromJson(reader, type);
+            Map<String, List<List<String>>> data =
+                    GSON.fromJson(reader, CONFIG_TYPE);
             reader.close();
 
-            mappings = wrapper.commands != null ? wrapper.commands : new ArrayList<>();
+            mappings.clear();
+
+            List<List<String>> commands = data.get("commands");
+            if (commands != null) {
+                int index = 0;
+                for (List<String> pair : commands) {
+                    if (pair.size() == 2) {
+                        mappings.add(new SubData(
+                                pair.get(0),
+                                pair.get(1),
+                                index++
+                        ));
+                    }
+                }
+            }
+
         } catch (IOException e) {
             e.printStackTrace();
-            mappings = new ArrayList<>();
         }
     }
 
-    public List<String> addToConfig(String abbreviation, String originalCommand) {
-        // Add new mapping
-        List<String> mapping = new ArrayList<>();
-        mapping.add(abbreviation);
-        mapping.add(originalCommand);
-        mappings.add(mapping);
+    /* -------------------- SAVE -------------------- */
 
-        // Save back to JSON file
+    private void saveConfig() {
         try {
             File file = new File(CONFIG_FILE);
-            if (!file.exists()) {
-                file.getParentFile().mkdirs(); // Ensure parent directories exist
-                file.createNewFile();
+            file.getParentFile().mkdirs();
+
+            Map<String, List<List<String>>> data = new HashMap<>();
+            List<List<String>> commands = new ArrayList<>();
+
+            for (SubData sub : mappings) {
+                List<String> pair = new ArrayList<>();
+                pair.add(sub.getSub());
+                pair.add(sub.getOriginal());
+                commands.add(pair);
             }
 
-            // Wrap the mappings into CommandWrapper for JSON
-            CommandWrapper wrapper = new CommandWrapper();
-            wrapper.commands = mappings;
+            data.put("commands", commands);
 
-            Gson gson = new Gson();
             Writer writer = new FileWriter(file);
-            gson.toJson(wrapper, writer);
+            GSON.toJson(data, writer);
             writer.flush();
             writer.close();
+
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        return mapping;
     }
 
-    public static List<String> SubAndArgCountToMapping(SubAndArgCount and) {
-        for(List<String> list : mappings) {
-            if(and.subBase.equals(list.getFirst().split(" ")[0]) && and.expectedArgs == list.getLast().chars()
-                    .filter(ch -> ch == '$')
-                    .count()) {
-                return list;
-            }
-        }
-        return null;
+    /* -------------------- ADD -------------------- */
+
+    public SubData addToConfig(String abbreviation, String originalCommand) {
+        SubData sub = new SubData(
+                abbreviation,
+                originalCommand,
+                mappings.size()
+        );
+
+        mappings.add(sub);
+        saveConfig();
+        return sub;
     }
+
+    /* -------------------- REMOVE -------------------- */
 
     public boolean removeSub(int index) {
-        int listIndex = index;
-
-        if (listIndex < 0 || listIndex >= mappings.size()) {
-            return false; // invalid index
-        }
-
-        mappings.remove(listIndex);
-
-        // Save updated mappings back to JSON
-        try {
-            File file = new File(CONFIG_FILE);
-
-            CommandWrapper wrapper = new CommandWrapper();
-            wrapper.commands = mappings;
-
-            Gson gson = new Gson();
-            try (Writer writer = new FileWriter(file)) {
-                gson.toJson(wrapper, writer);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (index < 0 || index >= mappings.size()) {
             return false;
         }
 
+        mappings.remove(index);
+
+        // re-index
+        for (int i = 0; i < mappings.size(); i++) {
+            mappings.get(i).setIndex(i);
+        }
+
+        saveConfig();
         return true;
     }
 
-    public List<List<String>> getMappings() {
-        return mappings;
-    }
+    /* -------------------- QUERY -------------------- */
 
-    private static class CommandWrapper {
-        List<List<String>> commands;
+    public List<SubData> getMappings() {
+        return mappings;
     }
 }

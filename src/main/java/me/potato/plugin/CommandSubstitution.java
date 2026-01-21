@@ -27,20 +27,16 @@ public class CommandSubstitution extends CommandBase {
 
     @Override
     protected void executeSync(@Nonnull CommandContext ctx) {
-        String[] inputs = ctx.getInputString().split(" ");
+//        String[] inputs = ctx.getInputString().split(" ");
 
         if(ctx.isPlayer()) {
-            if(inputs.length == 1) {
-                HytaleServer.get().getCommandManager().handleCommand(ctx.sender(), this.originalCommand.substring(1));
-            } else {
-                String command = CMDSubstitutionPlugin.argsToConfigList.get(CMDSubstitutionPlugin.getRightOne("/" + inputs[0], inputs.length - 1)).getLast().replace("/","");
-                int index = 1;
-                while(command.contains("$")) {
-                    command = command.replaceFirst("\\$", inputs[index]);
-                    index++;
-                }
-                HytaleServer.get().getCommandManager().handleCommand(ctx.sender(), command);
+            SubData data = CMDSubstitutionPlugin.getCorrectSubData(ctx.getInputString(), ctx);
+
+            if(data == null) {
+                return;
             }
+
+            HytaleServer.get().getCommandManager().handleCommand(ctx.sender(), data.getExecuteString(ctx.getInputString()));
         }
     }
 }
