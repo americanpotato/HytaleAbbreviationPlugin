@@ -31,9 +31,9 @@ public class SubData {
     }
 
     // takes in something like "xyz 100 330 22"
-    public String getExecuteString(String userInput) {
+    public String getExecuteString(String userInput, String original) {
         if (this.sub == null || this.sub.isEmpty()
-                || this.original == null || this.original.isEmpty()) {
+                || original == null || original.isEmpty()) {
             return "";
         }
 
@@ -76,7 +76,7 @@ public class SubData {
                 }
             }
 
-            String result = this.original;
+            String result = original;
 
             for (String value : values) {
                 int idx = result.indexOf("$");
@@ -90,7 +90,7 @@ public class SubData {
                 throw new IllegalArgumentException("Too many '$' placeholders in original.");
             }
 
-            return result.stripTrailing().substring(1);
+            return result.stripTrailing();
         }
 
         // ===== MODE 2: NAMED =====
@@ -112,7 +112,7 @@ public class SubData {
             }
         }
 
-        String result = this.original;
+        String result = original;
 
         for (Map.Entry<String, String> entry : placeholderMap.entrySet()) {
             result = result.replace(entry.getKey(), entry.getValue());
@@ -122,9 +122,33 @@ public class SubData {
             throw new IllegalArgumentException("Original contains undefined placeholders.");
         }
 
-        return result.stripTrailing().substring(1); // substring to remove /
+        return result.stripTrailing();
     }
 
+    public List<String> getExecuteStrings(String userInput, String original) {
+        if (original == null || original.isEmpty()) {
+            return List.of();
+        }
+
+        List<String> results = new ArrayList<>();
+
+        // Normalize: ensure single leading slash
+        String originalTrimmed = original.strip();
+
+        // Split on space + slash (new command)
+        String[] commandParts = originalTrimmed.split("\\s+/");
+        commandParts[0] = commandParts[0].substring(1);
+
+        for (int i = 0; i < commandParts.length; i++) {
+            String cmd = commandParts[i];
+
+            String expanded = getExecuteString(userInput, "/" + cmd);
+            results.add(expanded);
+
+        }
+
+        return results;
+    }
 
 
 

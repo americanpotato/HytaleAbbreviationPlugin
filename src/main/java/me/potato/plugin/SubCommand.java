@@ -60,9 +60,15 @@ public class SubCommand extends CommandBase {
             } else if(inputs.length == 3) {
                 int index = Integer.parseInt(inputs[2]) - 1;
                 List<SubData> mappings = CMDSubstitutionPlugin.config.getMappings();
-                SubData abr = mappings.get(index);
-                CMDSubstitutionPlugin.config.removeSub(index);
-                sendHeaderMessage(ctx, "Removed from config: " + abr.getSub() + " -> " + abr.getOriginal());
+                if(index > mappings.size() - 1 || index < 0) {
+                    Utility.sendError(ctx, "could not find command with id " + index + ", please check /sub list");
+                } else {
+                    SubData abr = mappings.get(index);
+                    CMDSubstitutionPlugin.config.removeSub(index);
+                    sendHeaderMessage(ctx, "Removed from config: " + abr.getSub() + " -> " + abr.getOriginal());
+                }
+            } else {
+                Utility.sendError(ctx, "failed to interpret parameters for /sub remove");
             }
         } else if(input.startsWith(this.getName() + " list")) {
             sendHeaderMessage(ctx, "List");

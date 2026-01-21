@@ -36,7 +36,9 @@ public class CommandSubstitution extends CommandBase {
                 return;
             }
 
-            HytaleServer.get().getCommandManager().handleCommand(ctx.sender(), data.getExecuteString(ctx.getInputString()));
+            for(String s : data.getExecuteStrings(ctx.getInputString(), data.getOriginal())) {
+                HytaleServer.get().getCommandManager().handleCommand(ctx.sender(), s.substring(1));
+            }
         }
     }
 }
