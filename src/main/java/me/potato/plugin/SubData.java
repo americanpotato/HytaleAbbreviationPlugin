@@ -1,9 +1,6 @@
 package me.potato.plugin;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 // holds data of a single substitution
 // also helper functions to interact with the substitutions data
@@ -169,6 +166,33 @@ public class SubData {
     }
 
     public static int countParams(String cmd) {
-        return (int) cmd.chars().filter(c -> c == '$').count();
+        Set<String> named = new HashSet<>();
+        int positionalCount = 0;
+
+        for (int i = 0; i < cmd.length(); i++) {
+            if (cmd.charAt(i) == '$') {
+                // Named placeholder: $ followed by at least one letter or digit
+                if (i + 1 < cmd.length() && Character.isLetterOrDigit(cmd.charAt(i + 1))) {
+                    int j = i + 1;
+                    while (j < cmd.length() && Character.isLetterOrDigit(cmd.charAt(j))) {
+                        j++;
+                    }
+                    named.add(cmd.substring(i, j));
+                    i = j - 1; // skip ahead
+                } else {
+                    // Positional $
+                    positionalCount++;
+                }
+            }
+        }
+
+        // If named placeholders exist, use unique count
+        if (!named.isEmpty()) {
+            return named.size();
+        }
+
+        // Otherwise count positional $
+        return positionalCount;
     }
+
 }

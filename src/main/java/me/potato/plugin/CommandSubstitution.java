@@ -37,7 +37,7 @@ public class CommandSubstitution extends CommandBase {
             }
 
             for(String s : data.getExecuteStrings(ctx.getInputString(), data.getOriginal())) {
-                HytaleServer.get().getCommandManager().handleCommand(ctx.sender(), s.substring(1));
+                HytaleServer.get().getCommandManager().handleCommand(ctx.sender(), s.substring(1).replace("++", "--"));
             }
         }
     }
