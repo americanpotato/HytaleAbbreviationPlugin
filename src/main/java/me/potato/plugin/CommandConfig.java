@@ -14,7 +14,7 @@ import java.util.Map;
 
 public class CommandConfig {
 
-    private static final String CONFIG_FILE = "./config/cmdsubstitutions.json";
+    private static final String CONFIG_FILE = "./mods/AbbreviationPlugin/cmdsubstitutions.json";
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
     private static final Type CONFIG_TYPE =
